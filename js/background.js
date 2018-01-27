@@ -142,7 +142,6 @@ async function init() {
 	browser.commands.onCommand.addListener( function( command ) {
 		if ( command == "open-panorama" ) {
 			openView();
-			console.log("toggling the feature!");
 		}
 	});
 

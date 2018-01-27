@@ -10,7 +10,7 @@
 	"commands": {
 		"open-panorama": {
 			"suggested_key": {
-				"default": "Ctrl+Shift+E"
+				"default": "Ctrl+E"
 			},
 			"description": "Open panorama"
 		}
