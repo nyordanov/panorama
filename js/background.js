@@ -139,6 +139,13 @@ async function init() {
 	browser.windows.onCreated.addListener(createGroupInWindow);
 	browser.tabs.onCreated.addListener(tabCreated);
 
+	browser.commands.onCommand.addListener( function( command ) {
+		if ( command == "open-panorama" ) {
+			openView();
+			console.log("toggling the feature!");
+		}
+	});
+
 	await groups.init();
 
 	let windowId = (await browser.windows.getCurrent()).id;

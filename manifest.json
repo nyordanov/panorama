@@ -6,10 +6,20 @@
 	"icons": {
 		"96": "icons/logo/logo-96.png"
 	},
+
+	"commands": {
+		"open-panorama": {
+			"suggested_key": {
+				"default": "Ctrl+Shift+E"
+			},
+			"description": "Open panorama"
+		}
+	},
+
 	"applications": {
 		"gecko": {
 			"id": "panorama@nyordanov.com",
-		    "strict_min_version": "59.0a1"
+			"strict_min_version": "59.0a1"
 		}
 	},
 
@@ -18,7 +28,12 @@
 	},
 
 	"browser_action": {
-		"default_icon": "icons/icon.svg"
+		"default_icon": "icons/icon.svg",
+		"theme_icons": [{
+			"light": "icons/icon-light.svg",
+			"dark": "icons/icon.svg",
+			"size": 32
+		}]
 	},
 
 	"options_ui": {
