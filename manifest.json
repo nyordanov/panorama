@@ -2,13 +2,8 @@
 	"manifest_version": 2,
 	"name": "Totally not Panorama",
 	"description": "Tab Groups with Tab Hiding (fork of Panorama View 0.6.15)",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"icons": {
-		"16": "icons/logo/logo-16.png",
-		"24": "icons/logo/logo-24.png",
-		"32": "icons/logo/logo-32.png",
-		"48": "icons/logo/logo-48.png",
-		"64": "icons/logo/logo-64.png",
 		"96": "icons/logo/logo-96.png"
 	},
 	"applications": {
