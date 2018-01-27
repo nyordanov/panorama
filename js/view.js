@@ -100,10 +100,15 @@ function tabRemoved(tabId, removeInfo) {
 	}
 }
 
-async function tabUpdated(tabId, changeInfo, tab) {
-	if(view.windowId == tab.windowId){
-		updateTabNode(tab);
-		updateFavicon(tab);
+async function tabUpdated( tabId, changeInfo, tab ) {
+	if ( view.windowId === tab.windowId ){
+		updateTabNode( tab );
+		updateFavicon( tab );
+	}
+
+	if ( 'pinned' in changeInfo ) {
+		fillGroupNodes();
+		updateTabNode( tab );
 	}
 }
 
@@ -138,5 +143,11 @@ function tabDetached(tabId, detachInfo) {
 }
 
 async function tabActivated(activeInfo) {
+	if ( activeInfo.tabId === view.tabId ) {
+		await tabs.forEach( async function( tab ) {
+			updateThumbnail( tab.id );
+		} );
+	}
+
 	setActiveTabNode();
 }
