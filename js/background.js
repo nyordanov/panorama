@@ -11,15 +11,20 @@ var config = {
 
 var openingView = false;
 
+async function getViewId() {
+	const tabs = await browser.tabs.query({url: browser.extension.getURL("view.html"), currentWindow: true});
+
+	return tabs.length ? tabs[0].id : undefined;
+}
+
 async function openView() {
+	const viewId = await getViewId();
 
-	var tabs = await browser.tabs.query({url: browser.extension.getURL("view.html"), currentWindow: true});
-
-	if(tabs.length > 0) {
-		browser.tabs.update(Number(tabs[0].id), {active: true});
-	}else{
+	if ( viewId ) {
+		browser.tabs.update( Number( viewId ), { active: true } );
+	} else {
 		openingView = true;
-		browser.tabs.create({url: "/view.html", active: true});
+		browser.tabs.create( { url: "/view.html", active: true } );
 	}
 }
 
@@ -130,8 +135,6 @@ async function salvageGrouplessTabs() {
 }
 
 async function init() {
-
-	await migrate069();
 	await setupWindows();
 	await salvageGrouplessTabs();
 
@@ -139,9 +142,15 @@ async function init() {
 	browser.windows.onCreated.addListener(createGroupInWindow);
 	browser.tabs.onCreated.addListener(tabCreated);
 
-	browser.commands.onCommand.addListener( function( command ) {
+	browser.commands.onCommand.addListener( async function( command ) {
 		if ( command == "open-panorama" ) {
-			openView();
+			const viewId = await getViewId();
+
+			if ( viewId && ( await browser.tabs.get( viewId ) ).active ) {
+				browser.tabs.remove( viewId );
+			} else {
+				openView();
+			}
 		}
 	});
 
@@ -152,7 +161,3 @@ async function init() {
 }
 
 init();
-
-async function migrate069(groups) {
-	await browser.storage.local.clear();
-}
