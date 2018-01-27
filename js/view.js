@@ -48,12 +48,6 @@ async function initView() {
 
 	// set all listeners
 	document.getElementById('newGroup').addEventListener('click', createGroup, false);
-	browser.runtime.onMessage.addListener(function(message) {
-		message = JSON.parse(message);
-		if(message.name == 'updateThumbnail') {
-			updateThumbnail(message.value);
-		}
-	});
 
 	browser.tabs.onCreated.addListener(tabCreated);
 	browser.tabs.onRemoved.addListener(tabRemoved);
@@ -88,7 +82,7 @@ async function tabCreated(tab) {
 		var groupId = undefined;
 
 		while(groupId === undefined) {
-			groupId = await view.tabs.getGroupId(tab.id);
+			groupId = await tabs.getGroupId(tab.id);
 		}
 
 		var group = groups.get(groupId);

@@ -1,14 +1,14 @@
-var view = view || { tabs: {} };
+var tabs = tabs || {};
 
-view.tabs.setGroupId = async function(tabId, groupId) {
+tabs.setGroupId = async function(tabId, groupId) {
 	await browser.sessions.setTabValue(tabId, 'groupId', groupId);
 };
 
-view.tabs.getGroupId = async function(tabId) {
+tabs.getGroupId = async function(tabId) {
 	return browser.sessions.getTabValue(tabId, 'groupId');
 };
 
-view.tabs.forEach = async function(callback) {
+tabs.forEach = async function(callback) {
 	const tabs = browser.tabs.query({currentWindow: true});
 
 	var promises = [];

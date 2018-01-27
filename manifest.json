@@ -24,7 +24,7 @@
 	},
 
 	"background": {
-		"scripts": ["js/background.js", "js/thumbnail.js", "js/groups.js", "js/tabs.js"]
+		"scripts": ["js/background.js", "js/groups.js", "js/tabs.js"]
 	},
 
 	"browser_action": {

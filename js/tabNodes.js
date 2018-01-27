@@ -5,7 +5,7 @@ var tabNodes = {};
 
 async function initTabNodes() {
 
-	await view.tabs.forEach(async function(tab) {
+	await tabs.forEach(async function(tab) {
 		makeTabNode(tab);
 		updateTabNode(tab);
 		updateFavicon(tab);
@@ -81,7 +81,7 @@ async function setActiveTabNode() {
 	var lastActive = -1;
 	var lastAccessed = 0;
 
-	await view.tabs.forEach(async function(tab) {
+	await tabs.forEach(async function(tab) {
 
 		tabNodes[tab.id].tab.classList.remove('selected');
 
@@ -106,13 +106,8 @@ async function updateThumbnail(tabId) {
 	var node = tabNodes[tabId];
 
 	if(node) {
-		browser.sessions.getTabValue(tabId, 'thumbnail').then(function(thumbnail) {
-			if(thumbnail) {
-				node.inner.style.backgroundImage = 'url(' + thumbnail + ')';
-			}else{
-				node.inner.style.backgroundImage = '';
-			}
-		});
+		const thumbnail = await browser.tabs.captureTab(tabId, {format: 'jpeg', quality: 25});
+		node.inner.style.backgroundImage = 'url(' + thumbnail + ')';
 	}
 }
 

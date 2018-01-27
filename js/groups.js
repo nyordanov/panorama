@@ -84,8 +84,8 @@ const groups = (function(){
 		setActive: async function(id) {
 			await browser.sessions.setWindowValue(windowId, 'activeGroup', id);
 
-			view.tabs.forEach(async function( tab ) {
-				var groupId = await view.tabs.getGroupId( tab.id );
+			tabs.forEach(async function( tab ) {
+				var groupId = await tabs.getGroupId( tab.id );
 
 				if ( groupId != id ) {
 					browser.tabs.hide(tab.id);
@@ -93,8 +93,6 @@ const groups = (function(){
 					browser.tabs.show(tab.id);
 				}
 			});
-
-			console.log( 'set active group:', id );
 		},
 
 		get: function(id) {

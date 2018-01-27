@@ -82,10 +82,10 @@ async function tabDrop(e) {
 		});
 
 		var toTabId = Number(dragOverTab.getAttribute('tabId'));
-		var groupId = await view.tabs.getGroupId(toTabId);
+		var groupId = await tabs.getGroupId(toTabId);
 
 		var tabId = Number(dragTab.getAttribute('tabId'));
-		view.tabs.setGroupId(tabId, groupId);
+		tabs.setGroupId(tabId, groupId);
 
 
 		var tab = await browser.tabs.get(tabId);
@@ -130,7 +130,7 @@ async function groupDrop(e) {
 	});
 
 	var tabId = Number(dragTab.getAttribute('tabId'));
-	view.tabs.setGroupId(tabId, groupId);
+	tabs.setGroupId(tabId, groupId);
 
 	var toIndex = -1;
 

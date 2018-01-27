@@ -57,8 +57,8 @@ function makeGroupNode(group) {
 				groups.remove(group.id);
 				removeGroupNode(group.id);
 
-				view.tabs.forEach(async function(tab) {
-					var groupId = await view.tabs.getGroupId(tab.id);
+				tabs.forEach(async function(tab) {
+					var groupId = await tabs.getGroupId(tab.id);
 					if(groupId == group.id) {
 						browser.tabs.remove(tab.id);
 					}
@@ -202,8 +202,8 @@ async function fillGroupNodes() {
 		fragment[group.id] = document.createDocumentFragment();
 	});
 
-	await view.tabs.forEach(async function(tab) {
-		var groupId = await view.tabs.getGroupId(tab.id);
+	await tabs.forEach(async function(tab) {
+		var groupId = await tabs.getGroupId(tab.id);
 		if(groupId != -1 && fragment[groupId]) {
 			fragment[groupId].appendChild(tabNodes[tab.id].tab);
 		}
@@ -217,7 +217,7 @@ async function fillGroupNodes() {
 
 async function insertTab(tab) {
 
-	var groupId = await view.tabs.getGroupId(tab.id);
+	var groupId = await tabs.getGroupId(tab.id);
 
 	if(groupId != -1) {
 

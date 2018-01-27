@@ -7,25 +7,6 @@ function formatByteSize(bytes) {
 	else return(bytes / 1073741824).toFixed(3) + " GiB";
 };
 
-async function getThumbnailCacheSize() {
-
-	const tabs = browser.tabs.query({});
-
-	var totalSize = 0;
-
-	for(const tab of await tabs) {
-
-		var thumbnail = await browser.sessions.getTabValue(tab.id, 'thumbnail');
-
-		if(thumbnail) {
-			totalSize += (await browser.sessions.getTabValue(tab.id, 'thumbnail')).length;
-		}
-	}
-
-	document.getElementById('thumbnailCacheSize').innerHTML = '';
-	document.getElementById('thumbnailCacheSize').appendChild(document.createTextNode(formatByteSize(totalSize)));
-}
-
 /*function convertBackup(tgData) {
 
 	var data = {
@@ -219,8 +200,6 @@ async function saveBackup() {
 }
 
 function init() {
-	getThumbnailCacheSize();
-
 	//document.getElementById('backupFileInput').addEventListener('change', loadBackup);
 	document.getElementById('saveBackupButton').addEventListener('click', saveBackup);
 }
