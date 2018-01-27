@@ -1,0 +1,41 @@
+{
+	"manifest_version": 2,
+	"name": "Totally not Panorama",
+	"description": "Tab Groups with Tab Hiding (fork of Panorama View 0.6.15)",
+	"version": "0.0.3",
+	"icons": {
+		"16": "icons/logo/logo-16.png",
+		"24": "icons/logo/logo-24.png",
+		"32": "icons/logo/logo-32.png",
+		"48": "icons/logo/logo-48.png",
+		"64": "icons/logo/logo-64.png",
+		"96": "icons/logo/logo-96.png"
+	},
+	"applications": {
+		"gecko": {
+			"id": "panorama@nyordanov.com",
+		    "strict_min_version": "59.0a1"
+		}
+	},
+
+	"background": {
+		"scripts": ["js/background.js", "js/thumbnail.js", "js/groups.js", "js/tabs.js"]
+	},
+
+	"browser_action": {
+		"default_icon": "icons/icon.svg"
+	},
+
+	"options_ui": {
+		"page": "options.html"
+	},
+
+	"permissions": [
+		"<all_urls>",
+		"tabs",
+		"storage",
+		"sessions",
+		"downloads",
+		"tabHide"
+	]
+}
