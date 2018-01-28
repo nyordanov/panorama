@@ -1,10 +1,8 @@
-
-
-function formatByteSize(bytes) {
-	if(bytes < 1024) return bytes + " bytes";
-	else if(bytes < 1048576) return(bytes / 1024).toFixed(3) + " KiB";
-	else if(bytes < 1073741824) return(bytes / 1048576).toFixed(3) + " MiB";
-	else return(bytes / 1073741824).toFixed(3) + " GiB";
+function formatByteSize( bytes ) {
+	if ( bytes < 1024 ) return bytes + " bytes";
+	else if ( bytes < 1048576 ) return ( bytes / 1024 ).toFixed( 3 ) + " KiB";
+	else if ( bytes < 1073741824 ) return ( bytes / 1048576 ).toFixed( 3 ) + " MiB";
+	else return ( bytes / 1073741824 ).toFixed( 3 ) + " GiB";
 };
 
 /*function convertBackup(tgData) {
@@ -120,21 +118,21 @@ function loadBackup(input) {
 
 function makeDateString() {
 
-	var pad = function(num) {
+	var pad = function( num ) {
 		var s = '00' + num;
-		return s.substr(-2);
+		return s.substr( -2 );
 	};
 
 	var date = new Date();
 	var string = '';
 
-	string += pad(date.getFullYear());
-	string += pad(date.getMonth() + 1);
-	string += pad(date.getDate());
+	string += pad( date.getFullYear() );
+	string += pad( date.getMonth() + 1 );
+	string += pad( date.getDate() );
 	string += '-';
-	string += pad(date.getHours());
-	string += pad(date.getMinutes());
-	string += pad(date.getSeconds());
+	string += pad( date.getHours() );
+	string += pad( date.getMinutes() );
+	string += pad( date.getSeconds() );
 
 	return string;
 }
@@ -149,31 +147,31 @@ async function saveBackup() {
 		windows: []
 	};
 
-	const windows = await browser.windows.getAll({});
+	const windows = await browser.windows.getAll( {} );
 
-	for(const wi in windows) {
+	for ( const wi in windows ) {
 
-		const groups = await browser.sessions.getWindowValue(windows[wi].id, 'groups');
-		const groupIndex = await browser.sessions.getWindowValue(windows[wi].id, 'groupIndex');
-		const activeGroup = await browser.sessions.getWindowValue(windows[wi].id, 'activeGroup');
+		const groups = await browser.sessions.getWindowValue( windows[ wi ].id, 'groups' );
+		const groupIndex = await browser.sessions.getWindowValue( windows[ wi ].id, 'groupIndex' );
+		const activeGroup = await browser.sessions.getWindowValue( windows[ wi ].id, 'activeGroup' );
 
-		data.windows[wi] = {groups: [], tabs: [], activeGroup: activeGroup, groupIndex: groupIndex};
+		data.windows[ wi ] = { groups: [], tabs: [], activeGroup: activeGroup, groupIndex: groupIndex };
 
-		for(const gi in groups) {
-			data.windows[wi].groups.push({
-				id: groups[gi].id,
-				name: groups[gi].name,
-				rect: groups[gi].rect,
-			});
+		for ( const gi in groups ) {
+			data.windows[ wi ].groups.push( {
+				id: groups[ gi ].id,
+				name: groups[ gi ].name,
+				rect: groups[ gi ].rect,
+			} );
 		}
 
-		const tabs = browser.tabs.query({windowId: windows[wi].id});
-		for(const tab of await tabs) {
+		const tabs = browser.tabs.query( { windowId: windows[ wi ].id } );
+		for ( const tab of await tabs ) {
 
-			var groupId = await browser.sessions.getTabValue(tab.id, 'groupId');
+			var groupId = await browser.sessions.getTabValue( tab.id, 'groupId' );
 
-			if(groupId != -1) {
-				data.windows[wi].tabs.push({
+			if ( groupId != -1 ) {
+				data.windows[ wi ].tabs.push( {
 					url: tab.url,
 					title: tab.title,
 					favIconUrl: tab.favIconUrl,
@@ -181,27 +179,27 @@ async function saveBackup() {
 					index: tab.index,
 					lastAccessed: tab.lastAccessed,
 					pinned: tab.pinned,
-				});
+				} );
 			}
 		}
 	}
 
-	var blob = new Blob([JSON.stringify(data, null, '\t')], {type : 'application/json'});
-	var dataUrl = window.URL.createObjectURL(blob);
+	var blob = new Blob( [ JSON.stringify( data, null, '\t' ) ], { type: 'application/json' } );
+	var dataUrl = window.URL.createObjectURL( blob );
 
 	var filename = 'panoramaView-backup-' + makeDateString() + '.json';
 
-	await browser.downloads.download({
+	await browser.downloads.download( {
 		url: dataUrl,
 		filename: filename,
 		conflictAction: 'uniquify',
 		saveAs: true
-	});
+	} );
 }
 
 function init() {
 	//document.getElementById('backupFileInput').addEventListener('change', loadBackup);
-	document.getElementById('saveBackupButton').addEventListener('click', saveBackup);
+	document.getElementById( 'saveBackupButton' ).addEventListener( 'click', saveBackup );
 }
 
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener( 'DOMContentLoaded', init );

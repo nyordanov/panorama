@@ -1,10 +1,10 @@
-
-.tab, .newtab {
+.tab,
+.newtab {
 	position: absolute;
 
 	cursor: pointer;
 
-	_transition: all 100ms cubic-bezier(.08,.82,.17,1);
+	_transition: all 100ms cubic-bezier(.08, .82, .17, 1);
 	_transition-property: width, height, top, left;
 }
 
@@ -16,7 +16,8 @@
 	outline: #45a1ff 2px solid;
 }
 
-.tab .inner, .newtab .inner {
+.tab .inner,
+.newtab .inner {
 	position: absolute;
 	top: 5px;
 	left: 5px;
@@ -38,7 +39,7 @@
 	background-size: cover;
 	background-position: top;
 
-	transition: opacity 500ms cubic-bezier(.08,.82,.17,1), transform 500ms cubic-bezier(.08,.82,.17,1), filter 500ms cubic-bezier(.08,.82,.17,1);
+	transition: opacity 500ms cubic-bezier(.08, .82, .17, 1), transform 500ms cubic-bezier(.08, .82, .17, 1), filter 500ms cubic-bezier(.08, .82, .17, 1);
 }
 
 .newtab .inner {
