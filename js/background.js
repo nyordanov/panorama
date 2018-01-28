@@ -54,7 +54,7 @@ async function setupWindows() {
 
 	for ( const window of await windows ) {
 
-		var groups = await browser.sessions.getWindowValue( window.id, 'groups<' );
+		var groups = await browser.sessions.getWindowValue( window.id, 'groups' );
 
 		if ( groups === undefined ) {
 			createGroupInWindow( window );
@@ -97,39 +97,37 @@ async function createGroupInWindow( window ) {
 }
 
 async function salvageGrouplessTabs() {
-
 	// make array of all groups for quick look-up
-	var windows = {};
+	let windows = {};
 	const _windows = await browser.windows.getAll( {} );
 
-	for ( const window of _windows ) {
-		windows[ window.id ] = { groups: null };
-		windows[ window.id ].groups = await browser.sessions.getWindowValue( window.id, 'groups' );
+	for ( const w of _windows ) {
+		windows[ w.id ] = { groups: null };
+		windows[ w.id ].groups = await browser.sessions.getWindowValue( w.id, 'groups' );
 	}
 
 	// check all tabs
 	const tabs = browser.tabs.query( {} );
 
 	for ( const tab of await tabs ) {
-		var groupId = await browser.sessions.getTabValue( tab.id, 'groupId' );
+		let groupId = await browser.sessions.getTabValue( tab.id, 'groupId' );
+
 		if ( groupId === undefined ) {
-			var activeGroup = await browser.sessions.getWindowValue( tab.windowId, 'activeGroup' );
+			let activeGroup = await browser.sessions.getWindowValue( tab.windowId, 'activeGroup' );
 			browser.sessions.setTabValue( tab.id, 'groupId', activeGroup );
 		} else {
-			var groupExists = false;
-			for ( var i in windows[ tab.windowId ].groups ) {
-				if ( windows[ tab.windowId ].groups[ i ].id == groupId ) {
+			let groupExists = false;
+			for ( const group of windows[ tab.windowId ].groups ) {
+				if ( group.id == groupId ) {
 					groupExists = true;
 					break;
 				}
 			}
 			if ( !groupExists ) {
-				var activeGroup = await browser.sessions.getWindowValue( tab.windowId, 'activeGroup' );
+				let activeGroup = await browser.sessions.getWindowValue( tab.windowId, 'activeGroup' );
 				browser.sessions.setTabValue( tab.id, 'groupId', activeGroup );
 			}
 		}
-
-		console.log( tab, activeGroup );
 	}
 }
 
@@ -157,6 +155,15 @@ async function init() {
 
 	let windowId = ( await browser.windows.getCurrent() ).id;
 	await groups.setActive( await browser.sessions.getWindowValue( windowId, 'activeGroup' ) );
+
+	printSessionData();
+}
+
+async function printSessionData() {
+	let windowId = ( await browser.windows.getCurrent() ).id;
+
+	console.log( await browser.sessions.getWindowValue( windowId, 'activeGroup' ) );
+	console.log( await browser.sessions.getWindowValue( windowId, 'groups' ) );
 }
 
 init();
