@@ -41,14 +41,17 @@ const groups = ( function() {
 		},
 
 		create: async function() {
-			var group = {
-				id: await func.newUid(),
-				name: 'Unnamed Group',
+			const groupId = await func.newUid();
+
+			const group = {
+				id: groupId,
+				name: `Group ${groupId}`,
 				windowId: windowId,
 				containerId: 'firefox-default',
 				rect: { x: 0, y: 0, w: 0.25, h: 0.5 },
 				tabCount: 0,
 			};
+
 			groups.push( group );
 
 			await func.save();

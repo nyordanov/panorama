@@ -79,7 +79,7 @@ async function createGroupInWindow( window ) {
 
 	var groups = [ {
 		id: groupId,
-		name: 'Unnamed Group',
+		name: `Group ${groupId}`,
 		containerId: 'firefox-default',
 		rect: { x: 0, y: 0, w: 0.25, h: 0.5 },
 		tabCount: 0,
