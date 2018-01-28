@@ -83,16 +83,7 @@ const groups = (function(){
 
 		setActive: async function(id) {
 			await browser.sessions.setWindowValue(windowId, 'activeGroup', id);
-
-			tabs.forEach(async function( tab ) {
-				var groupId = await tabs.getGroupId( tab.id );
-
-				if ( groupId != id ) {
-					browser.tabs.hide(tab.id);
-				} else {
-					browser.tabs.show(tab.id);
-				}
-			});
+			await tabs.toggleAll();
 		},
 
 		get: function(id) {

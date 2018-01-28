@@ -2,6 +2,7 @@ var tabs = tabs || {};
 
 tabs.setGroupId = async function(tabId, groupId) {
 	await browser.sessions.setTabValue(tabId, 'groupId', groupId);
+	await tabs.toggleAll();
 };
 
 tabs.getGroupId = async function(tabId) {
@@ -19,3 +20,17 @@ tabs.forEach = async function(callback) {
 
 	await Promise.all(promises);
 };
+
+tabs.toggleAll = async function() {
+	const activeGroup = await groups.getActive();
+
+	tabs.forEach(async function( tab ) {
+		var groupId = await tabs.getGroupId( tab.id );
+
+		if ( groupId != activeGroup ) {
+			browser.tabs.hide( tab.id );
+		} else {
+			browser.tabs.show( tab.id );
+		}
+	});
+}
