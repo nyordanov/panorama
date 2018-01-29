@@ -32,8 +32,8 @@ function makeTabNode( tab ) {
 		event.stopPropagation();
 
 		var groupId = await browser.sessions.getTabValue( tab.id, 'groupId' );
-		await groups.setActive( groupId );
 		await browser.tabs.update( tab.id, { active: true } );
+		await groups.setActive( groupId );
 	}, false );
 
 	close.addEventListener( 'click', function( event ) {

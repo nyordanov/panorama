@@ -149,6 +149,8 @@ async function tabActivated( activeInfo ) {
 		await tabs.forEach( async function( tab ) {
 			updateThumbnail( tab.id );
 		} );
+	} else {
+		browser.tabs.hide( view.tabId );
 	}
 
 	setActiveTabNode();
