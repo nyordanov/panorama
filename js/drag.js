@@ -123,10 +123,7 @@ function groupDragOver( e ) {
 	return false;
 }
 
-async function groupDrop( e ) {
-	e.stopPropagation();
-
-	var groupId = Number( this.getAttribute( 'groupId' ) );
+async function putTabInGroup( groupId ) {
 	groupNodes[ groupId ].newtab.insertAdjacentElement( 'beforebegin', dragTab );
 
 	groups.forEach( function( group ) {
@@ -141,6 +138,27 @@ async function groupDrop( e ) {
 	browser.tabs.onMoved.removeListener( tabMoved );
 	await browser.tabs.move( tabId, { index: toIndex } );
 	browser.tabs.onMoved.addListener( tabMoved );
+}
+
+async function groupDrop( e ) {
+	e.stopPropagation();
+
+	var groupId = Number( this.getAttribute( 'groupId' ) );
+
+	putTabInGroup( groupId );
+
+	return false;
+}
+
+async function groupsDrop( e ) {
+	e.stopPropagation();
+
+	const group = await groups.create();
+
+	makeGroupNode( group );
+	view.groupsNode.appendChild( groupNodes[ group.id ].group );
+
+	putTabInGroup( group.id );
 
 	return false;
 }
