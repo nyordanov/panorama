@@ -102,6 +102,7 @@ function makeGroupNode( group ) {
 	};
 
 	moveGroup( group );
+	resizeGroup( group );
 
 	// renaming groups
 	name.addEventListener( 'mousedown', function( event ) {
@@ -154,6 +155,7 @@ function makeGroupNode( group ) {
 		header.removeEventListener( 'mousemove', moveHandler, false );
 
 		moveHandler( event );
+		groups.save();
 	}, false );
 
 	// resize
@@ -204,9 +206,15 @@ function removeGroupNode( groupId ) {
 }
 
 function moveGroup( group ) {
-	console.log( group );
 	requestAnimationFrame( () => {
 		groupNodes[ group.id ].group.style.transform = `translate(${group.rect.x}px, ${group.rect.y}px)`;
+	} );
+}
+
+function resizeGroup( group ) {
+	requestAnimationFrame( () => {
+		groupNodes[ group.id ].group.style.width = `${group.rect.w * 100}vw`;
+		groupNodes[ group.id ].group.style.height = `${group.rect.h * 100}vh`;
 	} );
 }
 

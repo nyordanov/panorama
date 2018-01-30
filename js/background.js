@@ -10,6 +10,20 @@ var config = {
 
 var openingView = false;
 
+function semverCompare (a, b) {
+	var pa = a.split('.');
+	var pb = b.split('.');
+	for (var i = 0; i < 3; i++) {
+		var na = Number(pa[i]);
+		var nb = Number(pb[i]);
+		if (na > nb) return 1;
+		if (nb > na) return -1;
+		if (!isNaN(na) && isNaN(nb)) return 1;
+		if (isNaN(na) && !isNaN(nb)) return -1;
+	}
+	return 0;
+};
+
 async function getViewId() {
 	const tabs = await browser.tabs.query( { url: browser.extension.getURL( "view.html" ), currentWindow: true } );
 
@@ -160,6 +174,27 @@ async function init() {
 
 	let windowId = ( await browser.windows.getCurrent() ).id;
 	await groups.setActive( await browser.sessions.getWindowValue( windowId, 'activeGroup' ) );
+
+	// Resize and move groups to some acceptable sizes for old user
+	// Starting from v0.0.9 groups can be moved/resized manually
+	browser.runtime.onInstalled.addListener( async details => {
+		if ( details.reason === 'update' && semverCompare( details.previousVersion, '0.0.8' ) < 1 ) {
+			for ( const window of await browser.windows.getAll( {} ) ) {
+				let groups = await browser.sessions.getWindowValue( window.id, 'groups' );
+
+				await browser.sessions.setWindowValue( window.id, 'groups', groups.map( ( group, i ) => {
+					group.rect = {
+						x: (i % 4) * window.width / 4,
+						y: Math.floor(i / 4) * window.height / 2,
+						w: 0.25,
+						h: 0.5,
+					};
+
+					return group;
+				} ) );
+			}
+		}
+	} );
 
 	printSessionData();
 }

@@ -6,9 +6,6 @@ const groups = ( function() {
 	var groups;
 
 	var func = {
-		save: async function() {
-			await browser.sessions.setWindowValue( windowId, 'groups', groups );
-		},
 		newUid: async function() {
 			var groupIndex = ( await browser.sessions.getWindowValue( windowId, 'groupIndex' ) );
 
@@ -40,6 +37,10 @@ const groups = ( function() {
 			}
 		},
 
+		save: async function() {
+			await browser.sessions.setWindowValue( windowId, 'groups', groups );
+		},
+
 		create: async function() {
 			const groupId = await func.newUid();
 
@@ -54,7 +55,7 @@ const groups = ( function() {
 
 			groups.push( group );
 
-			await func.save();
+			await this.save();
 
 			return group;
 		},
@@ -66,7 +67,7 @@ const groups = ( function() {
 			}
 			groups.splice( index, 1 );
 
-			await func.save();
+			await this.save();
 		},
 
 		rename: async function( id, newName ) {
@@ -76,7 +77,7 @@ const groups = ( function() {
 			}
 			groups[ index ].name = newName;
 
-			await func.save();
+			await this.save();
 		},
 
 		getActive: async function() {
