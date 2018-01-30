@@ -49,6 +49,11 @@ function makeGroupNode( group ) {
 
 	var node = new_element( 'div', { class: 'group' }, [ top, right, bottom, left, top_right, bottom_right, bottom_left, top_left, header, content ] );
 
+	Object.assign( node.style, {
+		zIndex: group.id,
+		willChange: 'transform',
+	} );
+
 	close.addEventListener( 'click', function( event ) {
 		event.stopPropagation();
 
@@ -89,6 +94,15 @@ function makeGroupNode( group ) {
 		await browser.tabs.create( { active: true } );
 	}, false );
 
+	groupNodes[ group.id ] = {
+		group: node,
+		content: content,
+		newtab: newtab,
+		tabCount: tabCount
+	};
+
+	moveGroup( group );
+
 	// renaming groups
 	name.addEventListener( 'mousedown', function( event ) {
 		event.stopPropagation();
@@ -105,9 +119,41 @@ function makeGroupNode( group ) {
 	// ----
 
 	// move
+	let moveStart = {}, initialPosition = {};
 	header.addEventListener( 'mousedown', function( event ) {
+		moveStart = {
+			x: event.clientX,
+			y: event.clientY,
+		};
+
+		initialPosition = {
+			x: group.rect.x,
+			y: group.rect.y,
+		}
+
+		header.addEventListener( 'mousemove', moveHandler, false );
+
 		//event.preventDefault();
 		event.stopPropagation();
+	}, false );
+
+	let moveHandler = function( event ) {
+		//event.preventDefault();
+		event.stopPropagation();
+
+		group.rect.x = initialPosition.x + event.clientX - moveStart.x,
+		group.rect.y = initialPosition.y + event.clientY - moveStart.y,
+
+		moveGroup( group );
+	};
+
+	header.addEventListener( 'mouseup', function( event ) {
+		//event.preventDefault();
+		event.stopPropagation();
+
+		header.removeEventListener( 'mousemove', moveHandler, false );
+
+		moveHandler( event );
 	}, false );
 
 	// resize
@@ -150,18 +196,18 @@ function makeGroupNode( group ) {
 		event.preventDefault();
 		event.stopPropagation();
 	}, false );
-
-	groupNodes[ group.id ] = {
-		group: node,
-		content: content,
-		newtab: newtab,
-		tabCount: tabCount
-	};
 }
 
 function removeGroupNode( groupId ) {
 	groupNodes[ groupId ].group.parentNode.removeChild( groupNodes[ groupId ].group );
 	delete groupNodes[ groupId ];
+}
+
+function moveGroup( group ) {
+	console.log( group );
+	requestAnimationFrame( () => {
+		groupNodes[ group.id ].group.style.transform = `translate(${group.rect.x}px, ${group.rect.y}px)`;
+	} );
 }
 
 function getBestFit( param ) {
