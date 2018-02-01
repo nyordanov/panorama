@@ -150,12 +150,18 @@ async function groupDrop( e ) {
 	return false;
 }
 
-async function groupsDrop( e ) {
+async function outsideDrop( e ) {
 	e.stopPropagation();
 
 	const group = await groups.create();
 
 	makeGroupNode( group );
+
+	group.rect.x = view.pxToWidth( e.clientX - 75 );
+	group.rect.y = view.pxToHeight( e.clientY - 75 );
+	group.rect.w = view.pxToWidth( 150 );
+	group.rect.h = view.pxToHeight( 150 );
+
 	view.groupsNode.appendChild( groupNodes[ group.id ].group );
 
 	putTabInGroup( group.id );

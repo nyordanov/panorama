@@ -1,5 +1,19 @@
 'use strict';
 
+// https://gist.github.com/beaucharman/1f93fdd7c72860736643d1ab274fee1a
+function debounce(callback, wait, context = this) {
+	let timeout = null;
+	let callbackArgs = null;
+
+	const later = () => callback.apply(context, callbackArgs);
+
+	return function() {
+		callbackArgs = arguments;
+		clearTimeout(timeout);
+		timeout = setTimeout(later, wait);
+	}
+}
+
 var groupNodes = {};
 
 async function initGroupNodes() {
@@ -13,21 +27,77 @@ async function initGroupNodes() {
 	groupNodes.pinned = {
 		content: document.getElementById( 'pinnedTabs' ),
 	};
+
+	let createGroupStart = {};
+	view.groupsNode.addEventListener( 'mousedown', event => {
+		if ( event.target.id === 'groups' ) {
+			event.preventDefault();
+			event.stopPropagation();
+
+			createGroupStart = {
+				x: event.clientX,
+				y: event.clientY,
+			};
+
+			Object.assign( view.resizeDummy.style, {
+				opacity: 1,
+				top: createGroupStart.y + 'px',
+				left: createGroupStart.x + 'px',
+				width: 0,
+				height: 0,
+			} );
+
+			document.addEventListener( 'mousemove', createGroupMove );
+			document.addEventListener( 'mouseup', createGroupEnd, { once: true } );
+		}
+	} );
+
+	const createGroupMove = function( event ) {
+		requestAnimationFrame( () => {
+			view.resizeDummy.style.width = `${event.clientX - createGroupStart.x}px`;
+			view.resizeDummy.style.height = `${event.clientY - createGroupStart.y}px`;
+		} );
+	};
+
+	const createGroupEnd = async function( event ) {
+		event.preventDefault();
+
+		createGroupMove( event );
+		document.removeEventListener( 'mousemove', createGroupMove );
+
+		let width = event.clientX - createGroupStart.x;
+		let height = event.clientY - createGroupStart.y;
+
+		// probably accidental
+		if ( width < 10 || height < 10 ) {
+			return;
+		}
+
+		// set min dimensions
+		width = Math.max( width, 150 );
+		height = Math.max( height, 100 );
+
+		let group = await groups.create();
+		makeGroupNode( group );
+
+		Object.assign( group.rect, {
+			x: view.pxToWidth( createGroupStart.x ),
+			y: view.pxToHeight( createGroupStart.y ),
+			w: view.pxToWidth( width ),
+			h: view.pxToHeight( height ),
+		} );
+
+		view.groupsNode.appendChild( groupNodes[ group.id ].group );
+		updateGroupFit( group );
+
+		view.resizeDummy.style.opacity = 0;
+	};
 }
 
 function makeGroupNode( group ) {
 
-	// edges
-	var top = new_element( 'div', { class: 'top' } );
-	var right = new_element( 'div', { class: 'right' } );
-	var bottom = new_element( 'div', { class: 'bottom' } );
-	var left = new_element( 'div', { class: 'left' } );
-
 	// corners
-	var top_right = new_element( 'div', { class: 'top_right' } );
 	var bottom_right = new_element( 'div', { class: 'bottom_right' } );
-	var bottom_left = new_element( 'div', { class: 'bottom_left' } );
-	var top_left = new_element( 'div', { class: 'top_left' } );
 
 	// header
 	var name = new_element( 'span', { class: 'name', content: group.name } );
@@ -47,7 +117,7 @@ function makeGroupNode( group ) {
 	content.addEventListener( 'dragover', groupDragOver, false );
 	content.addEventListener( 'drop', groupDrop, false );
 
-	var node = new_element( 'div', { class: 'group' }, [ top, right, bottom, left, top_right, bottom_right, bottom_left, top_left, header, content ] );
+	var node = new_element( 'div', { class: 'group' }, [ bottom_right, header, content ] );
 
 	Object.assign( node.style, {
 		zIndex: group.id,
@@ -132,18 +202,18 @@ function makeGroupNode( group ) {
 			y: group.rect.y,
 		}
 
-		header.addEventListener( 'mousemove', moveHandler, false );
+		document.addEventListener( 'mousemove', moveHandler, false );
 
-		//event.preventDefault();
+		event.preventDefault();
 		event.stopPropagation();
 	}, false );
 
-	let moveHandler = function( event ) {
-		//event.preventDefault();
+	const moveHandler = function( event ) {
+		event.preventDefault();
 		event.stopPropagation();
 
-		group.rect.x = initialPosition.x + event.clientX - moveStart.x,
-		group.rect.y = initialPosition.y + event.clientY - moveStart.y,
+		group.rect.x = view.pxToWidth( initialPosition.x + event.clientX - moveStart.x ),
+		group.rect.y = view.pxToHeight( initialPosition.y + event.clientY - moveStart.y ),
 
 		moveGroup( group );
 	};
@@ -152,52 +222,73 @@ function makeGroupNode( group ) {
 		//event.preventDefault();
 		event.stopPropagation();
 
-		header.removeEventListener( 'mousemove', moveHandler, false );
+		document.removeEventListener( 'mousemove', moveHandler, false );
 
 		moveHandler( event );
 		groups.save();
 	}, false );
 
 	// resize
-	top.addEventListener( 'mousedown', function( event ) {
-		event.preventDefault();
-		event.stopPropagation();
-	}, false );
-
-	right.addEventListener( 'mousedown', function( event ) {
-		event.preventDefault();
-		event.stopPropagation();
-	}, false );
-
-	bottom.addEventListener( 'mousedown', function( event ) {
-		event.preventDefault();
-		event.stopPropagation();
-	}, false );
-
-	left.addEventListener( 'mousedown', function( event ) {
-		event.preventDefault();
-		event.stopPropagation();
-	}, false );
-
-	top_right.addEventListener( 'mousedown', function( event ) {
-		event.preventDefault();
-		event.stopPropagation();
-	}, false );
-
+	let resizeStart = {}, windowWidth, windowHeight;
 	bottom_right.addEventListener( 'mousedown', function( event ) {
 		event.preventDefault();
 		event.stopPropagation();
+
+		resizeStart = {
+			x: event.clientX,
+			y: event.clientY,
+		};
+
+		Object.assign( view.resizeDummy.style, {
+			opacity: 1,
+			top: (group.rect.y * 100) + 'vh',
+			left: (group.rect.x * 100) + 'vw',
+			width: (group.rect.w * 100) + 'vw',
+			height: (group.rect.h * 100) + 'vh',
+		} );
+
+		node.style.opacity = 1;
+
+		windowWidth = window.innerWidth;
+		windowHeight = window.innerHeight;
+
+		document.addEventListener( 'mousemove', resizeHandler, false );
+		document.addEventListener( 'mouseup', resizeEndHandler, { once: true } );
 	}, false );
 
-	bottom_left.addEventListener( 'mousedown', function( event ) {
-		event.preventDefault();
-		event.stopPropagation();
-	}, false );
+	const resizeHandler = function( event ) {
+		let scaleX = ( event.clientX - resizeStart.x + group.rect.w * windowWidth ) / ( group.rect.w * windowWidth );
+		let scaleY = ( event.clientY - resizeStart.y + group.rect.h * windowHeight ) / ( group.rect.h * windowHeight );
 
-	top_left.addEventListener( 'mousedown', function( event ) {
+		view.resizeDummy.style.transform = `scale(${scaleX}, ${scaleY})`;
+	};
+
+	const resizeEndHandler = function( event ) {
 		event.preventDefault();
 		event.stopPropagation();
-	}, false );
+
+		document.removeEventListener( 'mousemove', resizeHandler, false );
+
+		resizeHandler( event );
+
+		let scaleX = ( event.clientX - resizeStart.x + group.rect.w * windowWidth ) / ( group.rect.w * windowWidth );
+		let scaleY = ( event.clientY - resizeStart.y + group.rect.h * windowHeight ) / ( group.rect.h * windowHeight );
+
+		group.rect.w *= scaleX;
+		group.rect.h *= scaleY;
+
+		resizeGroup( group );
+		updateGroupFit( group );
+
+		view.resizeDummy.style.opacity = 0;
+		node.style.opacity = 1;
+	};
+
+	window.addEventListener( 'resize', debounce( event => {
+		groups.forEach( function( group ) {
+			updateGroupFit( group );
+		} );
+	}, 100 ) );
 }
 
 function removeGroupNode( groupId ) {
@@ -207,7 +298,9 @@ function removeGroupNode( groupId ) {
 
 function moveGroup( group ) {
 	requestAnimationFrame( () => {
-		groupNodes[ group.id ].group.style.transform = `translate(${group.rect.x}px, ${group.rect.y}px)`;
+		if ( group.id in groupNodes ) {
+			groupNodes[ group.id ].group.style.transform = `translate(${group.rect.x * 100}vw, ${group.rect.y * 100}vh)`;
+		}
 	} );
 }
 
@@ -312,74 +405,74 @@ async function insertTab( tab ) {
 }
 
 function updateGroupFit( group ) {
+	requestAnimationFrame( () => {
+		var node = groupNodes[ group.id ];
+		var childNodes = node.content.childNodes;
 
-	var node = groupNodes[ group.id ];
-	var childNodes = node.content.childNodes;
+		node.tabCount.innerHTML = '';
+		node.tabCount.appendChild( document.createTextNode( childNodes.length - 1 ) );
 
-	node.tabCount.innerHTML = '';
-	node.tabCount.appendChild( document.createTextNode( childNodes.length - 1 ) );
+		// fit
+		var rect = node.content.getBoundingClientRect();
 
-	// fit
-	var rect = node.content.getBoundingClientRect();
+		var ratio = background.config.tab.ratio;
+		var small = false;
 
-	var ratio = background.config.tab.ratio;
-	var small = false;
-
-	var fit = getBestFit( {
-		width: rect.width,
-		height: rect.height,
-
-		minWidth: background.config.tab.minWidth,
-		maxWidth: background.config.tab.maxWidth,
-
-		ratio: ratio,
-
-		amount: childNodes.length,
-	} );
-
-	if ( fit.x == -1 || fit.y == -1 ) {
-		ratio = 1;
-		small = true;
-
-		fit = getBestFit( {
+		var fit = getBestFit( {
 			width: rect.width,
 			height: rect.height,
 
-			minWidth: 50,
-			maxWidth: 99,
+			minWidth: background.config.tab.minWidth,
+			maxWidth: background.config.tab.maxWidth,
 
 			ratio: ratio,
 
 			amount: childNodes.length,
 		} );
-	}
 
-	// this should be the deck view
-	if ( fit.x == -1 || fit.y == -1 ) {
-		fit = {
-			x: 11,
-			y: 10,
-		}
-	}
+		if ( fit.x == -1 || fit.y == -1 ) {
+			ratio = 1;
+			small = true;
 
-	var index = 0;
+			fit = getBestFit( {
+				width: rect.width,
+				height: rect.height,
 
-	var w = rect.width / fit.x;
-	var h = w * ratio;
+				minWidth: 50,
+				maxWidth: 99,
 
-	for ( var i = 0; i < childNodes.length; i++ ) {
-		if ( small ) {
-			childNodes[ i ].classList.add( 'small' );
-		} else {
-			childNodes[ i ].classList.remove( 'small' );
+				ratio: ratio,
+
+				amount: childNodes.length,
+			} );
 		}
 
-		childNodes[ i ].style.width = w + 'px';
-		childNodes[ i ].style.height = h + 'px';
-		childNodes[ i ].style.left = ( w * ( index % fit.x ) ) + 'px';
-		childNodes[ i ].style.top = ( h * Math.floor( index / fit.x ) ) + 'px';
+		// this should be the deck view
+		if ( fit.x == -1 || fit.y == -1 ) {
+			fit = {
+				x: 11,
+				y: 10,
+			}
+		}
 
-		index++;
-	}
+		var index = 0;
 
+		var w = rect.width / fit.x;
+		var h = w * ratio;
+
+		for ( var i = 0; i < childNodes.length; i++ ) {
+			if ( small ) {
+				childNodes[ i ].classList.add( 'small' );
+			} else {
+				childNodes[ i ].classList.remove( 'small' );
+			}
+
+			childNodes[ i ].style.width = w + 'px';
+			childNodes[ i ].style.height = h + 'px';
+			childNodes[ i ].style.left = ( w * ( index % fit.x ) ) + 'px';
+			childNodes[ i ].style.top = ( h * Math.floor( index / fit.x ) ) + 'px';
+
+			index++;
+		}
+	} );
 }

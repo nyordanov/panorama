@@ -147,6 +147,7 @@ async function salvageGrouplessTabs() {
 
 async function init() {
 	await setupWindows();
+	await groups.init();
 	await salvageGrouplessTabs();
 
 	browser.browserAction.onClicked.addListener( openView );
@@ -170,8 +171,6 @@ async function init() {
 		}
 	} );
 
-	await groups.init();
-
 	let windowId = ( await browser.windows.getCurrent() ).id;
 	await groups.setActive( await browser.sessions.getWindowValue( windowId, 'activeGroup' ) );
 
@@ -184,8 +183,8 @@ async function init() {
 
 				await browser.sessions.setWindowValue( window.id, 'groups', groups.map( ( group, i ) => {
 					group.rect = {
-						x: (i % 4) * window.width / 4,
-						y: Math.floor(i / 4) * window.height / 2,
+						x: (i % 4) / 4,
+						y: Math.floor(i / 4) / 2,
 						w: 0.25,
 						h: 0.5,
 					};

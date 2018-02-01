@@ -29,21 +29,36 @@ body {
 	background-color: #f2f2f2;
 }
 
-#toolbar .button {
+#newGroup {
+	position: relative;
+}
+
+#newGroup .button {
 	width: 28px;
 	height: 28px;
+	line-height: 28px;
+	font-size: 20px;
+	text-align: center;
+	cursor: pointer;;
 
 	border-radius: 4px;
 }
 
-#toolbar .button:hover {
-	background-color: #d6d6d6;
+#newGroup .info {
+	position: absolute;
+	top: calc( 50% - 3px );
+	right: calc( 100% + 6px );
+	transform: translateY( -150% );
+	background: #f9f9fa;
+	border: 1px solid #fff;
+	box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.6);
+	min-width: 420px;
+	padding: 5px 10px;
 }
 
-#newGroup {
-	background-image: url(/icons/plus_dark.svg);
-	background-repeat: no-repeat;
-	background-position: center;
+
+#newGroup:hover .info {
+	transform: translateY( -50% );
 }
 
 .drag_indicator {

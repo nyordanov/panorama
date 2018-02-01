@@ -28,6 +28,14 @@ var view = {
 	dragIndicator: null,
 
 	tabs: {},
+
+	pxToWidth: function( px ) {
+		return px / window.innerWidth;
+	},
+
+	pxToHeight: function( px ) {
+		return px / window.innerHeight;
+	}
 };
 
 async function initView() {
@@ -35,6 +43,7 @@ async function initView() {
 	view.windowId = ( await browser.windows.getCurrent() ).id;
 	view.tabId = ( await browser.tabs.getCurrent() ).id;
 	view.groupsNode = document.getElementById( 'groups' );
+	view.resizeDummy = document.getElementById( 'resize-dummy' );
 
 	view.dragIndicator = new_element( 'div', { class: 'drag_indicator' } );
 	view.groupsNode.appendChild( view.dragIndicator );
@@ -46,8 +55,6 @@ async function initView() {
 	await initGroupNodes();
 
 	// set all listeners
-	document.getElementById( 'newGroup' ).addEventListener( 'click', createGroup, false );
-
 	browser.tabs.onCreated.addListener( tabCreated );
 	browser.tabs.onRemoved.addListener( tabRemoved );
 
@@ -60,20 +67,11 @@ async function initView() {
 	browser.tabs.onActivated.addListener( tabActivated );
 
 	view.groupsNode.addEventListener( 'dragover', groupDragOver, false );
-	view.groupsNode.addEventListener( 'drop', groupsDrop, false );
+	view.groupsNode.addEventListener( 'drop', outsideDrop, false );
 }
 
 
 document.addEventListener( 'DOMContentLoaded', initView, false );
-
-
-async function createGroup() {
-	var group = await groups.create();
-	makeGroupNode( group );
-	view.groupsNode.appendChild( groupNodes[ group.id ].group );
-	updateGroupFit( group );
-}
-
 
 async function tabCreated( tab ) {
 	if ( view.windowId == tab.windowId ) {

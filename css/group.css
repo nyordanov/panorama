@@ -1,4 +1,5 @@
-.group {
+.group,
+#resize-dummy {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -8,7 +9,6 @@
 	margin: 5px;
 
 	border: #ffffff 1px solid;
-	border-radius: 5px;
 	box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.6);
 
 	background-color: rgba( 0, 0, 0, 0.03);
@@ -84,8 +84,6 @@
 	top: -5px;
 	right: 20px;
 
-	border-radius: 0 0 3px 3px;
-
 	background-color: #CCCCCC;
 
 	color: #FFFFFF;
@@ -119,61 +117,6 @@
 	bottom: 5px;
 }
 
-.group .top {
-	height: 5px;
-
-	position: absolute;
-	top: 0;
-	left: 20px;
-	right: 20px;
-
-	cursor: ns-resize;
-}
-
-.group .right {
-	width: 5px;
-
-	position: absolute;
-	top: 20px;
-	bottom: 20px;
-	right: 0;
-
-	cursor: ew-resize;
-}
-
-.group .bottom {
-	height: 5px;
-
-	position: absolute;
-	bottom: 0;
-	left: 20px;
-	right: 20px;
-
-	cursor: ns-resize;
-}
-
-.group .left {
-	width: 5px;
-
-	position: absolute;
-	top: 20px;
-	bottom: 20px;
-	left: 0;
-
-	cursor: ew-resize;
-}
-
-.group .top_right {
-	width: 20px;
-	height: 20px;
-
-	position: absolute;
-	top: 0;
-	right: 0;
-
-	cursor: nesw-resize;
-}
-
 .group .bottom_right {
 	width: 20px;
 	height: 20px;
@@ -183,28 +126,9 @@
 	right: 0;
 
 	cursor: nwse-resize;
-}
 
-.group .bottom_left {
-	width: 20px;
-	height: 20px;
-
-	position: absolute;
-	bottom: 0;
-	left: 0;
-
-	cursor: nesw-resize;
-}
-
-.group .top_left {
-	width: 20px;
-	height: 20px;
-
-	position: absolute;
-	top: 0;
-	left: 0;
-
-	cursor: nwse-resize;
+	opacity: .3;
+	background: url(/icons/resize.svg) bottom right/50% no-repeat;
 }
 
 #pinnedTabs {
@@ -240,4 +164,14 @@
 #pinnedTabs .tab .favicon {
 	border: 0;
 	position: relative;
+}
+
+#resize-dummy {
+	position: absolute;
+	pointer-events: none;
+	opacity: 0;
+	transition: opacity .05s ease-out;
+	z-index: 1000000;
+	background: #f1f1f2;
+	transform-origin: top left;
 }
