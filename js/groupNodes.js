@@ -198,11 +198,12 @@ function makeGroupNode( group ) {
 		};
 
 		initialPosition = {
-			x: group.rect.x,
-			y: group.rect.y,
+			x: group.rect.x * window.innerWidth,
+			y: group.rect.y * window.innerHeight,
 		}
 
 		document.addEventListener( 'mousemove', moveHandler, false );
+		document.addEventListener( 'mouseup', moveEndHandler, { once: true } );
 
 		event.preventDefault();
 		event.stopPropagation();
@@ -218,7 +219,7 @@ function makeGroupNode( group ) {
 		moveGroup( group );
 	};
 
-	header.addEventListener( 'mouseup', function( event ) {
+	const moveEndHandler = function( event ) {
 		//event.preventDefault();
 		event.stopPropagation();
 
@@ -226,7 +227,7 @@ function makeGroupNode( group ) {
 
 		moveHandler( event );
 		groups.save();
-	}, false );
+	};
 
 	// resize
 	let resizeStart = {}, windowWidth, windowHeight;
