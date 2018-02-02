@@ -89,12 +89,13 @@ async function setActiveTabNode() {
 	var lastAccessed = 0;
 
 	await tabs.forEach( async function( tab ) {
+		if ( tab.id in tabNodes ) {
+			tabNodes[ tab.id ].tab.classList.remove( 'selected' );
 
-		tabNodes[ tab.id ].tab.classList.remove( 'selected' );
-
-		if ( tab.lastAccessed > lastAccessed && tab.id != view.tabId ) {
-			lastAccessed = tab.lastAccessed;
-			lastActive = tab.id;
+			if ( tab.lastAccessed > lastAccessed && tab.id != view.tabId ) {
+				lastAccessed = tab.lastAccessed;
+				lastActive = tab.id;
+			}
 		}
 	} );
 

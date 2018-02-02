@@ -73,19 +73,18 @@ async function initView() {
 
 document.addEventListener( 'DOMContentLoaded', initView, false );
 
-async function tabCreated( tab ) {
+async function tabCreated( tab, groupId = undefined ) {
 	if ( view.windowId == tab.windowId ) {
 		makeTabNode( tab );
 		updateTabNode( tab );
 		updateFavicon( tab );
-
-		var groupId = undefined;
 
 		while ( groupId === undefined ) {
 			groupId = await tabs.getGroupId( tab.id );
 		}
 
 		var group = groups.get( groupId );
+
 		await insertTab( tab );
 		updateGroupFit( group );
 	}
@@ -123,17 +122,16 @@ async function tabMoved( tabId, moveInfo ) {
 	}
 }
 
-function tabAttached( tabId, attachInfo ) {
-	console.log( 'tab attached', attachInfo.newWindowId );
+async function tabAttached( tabId, attachInfo ) {
 	if ( view.windowId == attachInfo.newWindowId ) {
-		browser.tabs.get( tabId ).then( tab => {
-			tabCreated( tab );
-		} );
+		let tab = await browser.tabs.get( tabId );
+
+		tabs.setGroupId( tabId, await browser.sessions.getWindowValue( view.windowId, 'activeGroup' ) );
+		tabCreated( tab );
 	}
 }
 
 function tabDetached( tabId, detachInfo ) {
-	console.log( 'tab detached', detachInfo.oldWindowId );
 	if ( view.windowId == detachInfo.oldWindowId ) {
 		deleteTabNode( tabId );
 		groups.forEach( function( group ) {
