@@ -100,14 +100,13 @@ function makeGroupNode( group ) {
 	var bottom_right = new_element( 'div', { class: 'bottom_right' } );
 
 	// header
-	var name = new_element( 'span', { class: 'name', content: group.name } );
 	var input = new_element( 'input', { type: 'text', value: group.name } );
 
 	var tabCount = new_element( 'span', { class: 'tab_count', content: group.tabCount } );
 
 	var close = new_element( 'div', { class: 'close' } );
 
-	var header = new_element( 'div', { class: 'header' }, [ name, input, tabCount, close ] );
+	var header = new_element( 'div', { class: 'header' }, [ input, tabCount, close ] );
 
 	// newtab
 	var newtab = new_element( 'div', { class: 'newtab' }, [ new_element( 'div', { class: 'wrap' }, [ new_element( 'div', { class: 'inner' } ) ] ) ] );
@@ -175,16 +174,7 @@ function makeGroupNode( group ) {
 	resizeGroup( group );
 
 	// renaming groups
-	name.addEventListener( 'mousedown', function( event ) {
-		event.stopPropagation();
-
-		header.classList.add( 'input' );
-	}, false );
-
-	input.addEventListener( 'blur', function( event ) {
-		name.innerHTML = '';
-		name.appendChild( document.createTextNode( this.value ) );
-		header.classList.remove( 'input' );
+	input.addEventListener( 'keypress', function( event ) {
 		groups.rename( group.id, this.value );
 	}, false );
 	// ----
@@ -205,6 +195,9 @@ function makeGroupNode( group ) {
 		document.addEventListener( 'mousemove', moveHandler, false );
 		document.addEventListener( 'mouseup', moveEndHandler, { once: true } );
 
+		input.blur();
+		window.getSelection().removeAllRanges();
+
 		event.preventDefault();
 		event.stopPropagation();
 	}, false );
@@ -220,6 +213,11 @@ function makeGroupNode( group ) {
 	};
 
 	const moveEndHandler = function( event ) {
+		if ( event.clientX === moveStart.x && event.clientY === moveStart.y ) {
+			input.focus();
+			input.select();
+		}
+
 		//event.preventDefault();
 		event.stopPropagation();
 
