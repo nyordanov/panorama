@@ -197,9 +197,52 @@ async function saveBackup() {
 	} );
 }
 
-function init() {
+const commandName = 'open-panorama';
+
+// populate the shortcode input
+async function updateUI() {
+	let commands = await browser.commands.getAll();
+	for ( let command of commands ) {
+		if ( command.name === commandName ) {
+			document.querySelector( '#shortcut' ).value = command.shortcut;
+		}
+	}
+}
+
+// Update the shortcut based on the value in the textbox.
+async function updateShortcut() {
+	try {
+		await browser.commands.update({
+			name: commandName,
+			shortcut: document.querySelector( '#shortcut' ).value
+		});
+	} catch( e ) {
+		alert( 'Invalid shortcut' );
+	}
+}
+
+// Reset the shortcut and update the textbox.
+async function resetShortcut() {
+	await browser.commands.reset( commandName );
+	updateUI();
+}
+
+async function init() {
 	//document.getElementById('backupFileInput').addEventListener('change', loadBackup);
 	document.getElementById( 'saveBackupButton' ).addEventListener( 'click', saveBackup );
+
+	if ( 'commands' in browser && 'update' in browser.commands ) {
+		await updateUI();
+
+		/**
+		 * Handle update and reset button clicks
+		 */
+		document.querySelector( '#update-shortcut' ).addEventListener( 'click', updateShortcut )
+		document.querySelector( '#reset-shortcut' ).addEventListener( 'click', resetShortcut )
+	} else {
+		// show a warning to users of old browsers
+		document.querySelector( '.shortcuts .error' ).display = '';
+	}
 }
 
 document.addEventListener( 'DOMContentLoaded', init );

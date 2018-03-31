@@ -6,6 +6,19 @@
 </head>
 
 <body>
+	<section class="shortcuts">
+		<h2>Shortcuts</h2>
+		<p>
+			<em class="error" style="display: none">The options below require Firefox 60, but it appears that you are using an older version.</em>
+			<form class="browser-style">
+				<label>Open/Hide panorama</label>
+				<input type="text" id="shortcut">
+				<button id="update-shortcut" class="browser-style">Update</button>
+				<button id="reset-shortcut" class="browser-style">Reset</button>
+			</form>
+			<em><a href="https://developer.mozilla.org/en-US/Add-ons/WebExtensions/manifest.json/commands#Key_combinations" target="_blank">The format for the shortcut option is detailed here</a></em>
+		</p>
+	</section>
 	<section>
 		<h2>Backups</h2>
 		<!--h3>Import</h3>
@@ -13,9 +26,10 @@
 			<p><input id="backupFileInput" name="backupFile" type="file" accept=".json"></p-->
 		<h3>Export</h3>
 		<p>
-			<button id="saveBackupButton">Save backup</button>
+			<button id="saveBackupButton" class="browser-style">Save backup</button>
 		</p>
 	</section>
+
 	<script src="js/options.js"></script>
 </body>
 
