@@ -163,6 +163,7 @@ async function outsideDrop( e ) {
 	group.rect.h = view.pxToHeight( 150 );
 
 	view.groupsNode.appendChild( groupNodes[ group.id ].group );
+	groups.save();
 
 	putTabInGroup( group.id );
 

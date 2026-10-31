@@ -89,6 +89,7 @@ async function initGroupNodes() {
 
 		view.groupsNode.appendChild( groupNodes[ group.id ].group );
 		updateGroupFit( group );
+		groups.save();
 
 		view.resizeDummy.style.opacity = 0;
 	};
@@ -302,6 +303,7 @@ function makeGroupNode( group ) {
 
 		resizeGroup( group );
 		updateGroupFit( group );
+		groups.save();
 
 		view.resizeDummy.style.opacity = 0;
 		node.style.opacity = 1;
