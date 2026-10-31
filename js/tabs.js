@@ -21,16 +21,22 @@ tabs.forEach = async function( callback ) {
 	await Promise.all( promises );
 };
 
-tabs.toggleAll = async function() {
-	const activeGroup = await groups.getActive();
+// show/hide in two batched calls; per-tab calls make the tab strip animate each one (upstream a54b71a)
+tabs.toggleAll = async function( windowId ) {
+	if ( windowId === undefined ) {
+		windowId = ( await browser.windows.getCurrent() ).id;
+	}
 
-	tabs.forEach( async function( tab ) {
-		var groupId = await tabs.getGroupId( tab.id );
+	const activeGroup = await browser.sessions.getWindowValue( windowId, 'activeGroup' );
+	const show = [], hide = [];
 
-		if ( groupId != activeGroup ) {
-			browser.tabs.hide( tab.id );
-		} else {
-			browser.tabs.show( tab.id );
+	await Promise.all( ( await browser.tabs.query( { windowId } ) ).map( async tab => {
+		if ( tab.pinned ) {
+			return;
 		}
-	} );
-}
+		( await tabs.getGroupId( tab.id ) == activeGroup ? show : hide ).push( tab.id );
+	} ) );
+
+	if ( hide.length ) browser.tabs.hide( hide );
+	if ( show.length ) browser.tabs.show( show );
+};
