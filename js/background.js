@@ -181,6 +181,21 @@ async function tabUpdated( tabId, changeInfo, tab ) {
 	}
 }
 
+// a hidden tab can still be activated (urlbar "switch to tab", other add-ons, ...);
+// follow it into its group instead of leaving it visible among another group's tabs
+async function tabActivated( activeInfo ) {
+	const groupId = await browser.sessions.getTabValue( activeInfo.tabId, 'groupId' );
+
+	if ( groupId === undefined || groupId == -1 || !await groupExists( activeInfo.windowId, groupId ) ) {
+		return;
+	}
+
+	if ( groupId != await browser.sessions.getWindowValue( activeInfo.windowId, 'activeGroup' ) ) {
+		await browser.sessions.setWindowValue( activeInfo.windowId, 'activeGroup', groupId );
+		await tabs.toggleAll( activeInfo.windowId );
+	}
+}
+
 async function init() {
 	await setupWindows();
 	await groups.init();
@@ -191,6 +206,7 @@ async function init() {
 	browser.tabs.onCreated.addListener( tabCreated );
 	browser.tabs.onAttached.addListener( tabAttached );
 	browser.tabs.onUpdated.addListener( tabUpdated );
+	browser.tabs.onActivated.addListener( tabActivated );
 
 	browser.windows.onFocusChanged.addListener( async windowId =>  {
 		await groups.init();
