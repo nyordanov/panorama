@@ -8,10 +8,10 @@
 
 	margin: 5px;
 
-	border: #ffffff 1px solid;
-	box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.6);
+	border: var(--frame) 1px solid;
+	box-shadow: inset 0 0 1px var(--shadow);
 
-	background-color: rgba( 0, 0, 0, 0.03);
+	background-color: var(--group-bg);
 }
 
 .group .header {
@@ -23,7 +23,6 @@
 	left: 10px;
 	z-index: 100;
 
-	_border-bottom: #cccccc 1px solid;
 
 	cursor: move;
 }
@@ -41,7 +40,7 @@
 
 	background: none;
 
-	color: #2a2a2e;
+	color: var(--text);
 	font-size: 13px;
 	font-family: inherit;
 	white-space: nowrap;
@@ -49,7 +48,7 @@
 }
 
 .group .header input.edit {
-	color: #2a2a2e;
+	color: var(--text);
 }
 
 .group .header .tab_count {
@@ -59,7 +58,7 @@
 	top: -5px;
 	right: 20px;
 
-	background-color: #CCCCCC;
+	background-color: var(--border);
 
 	color: #FFFFFF;
 	font-size: 12px;
@@ -110,20 +109,21 @@
 	cursor: nwse-resize;
 
 	opacity: .3;
+	filter: var(--icon-filter);
 	background: url(/icons/resize.svg) bottom right/50% no-repeat;
 }
 
 #pinnedTabs {
 	margin: 0 -5px;
 	padding: 5px;
-	border-top: 1px solid #ccc;
+	border-top: 1px solid var(--border);
 }
 
 #pinnedTabs .tab {
 	width: 28px;
 	height: 28px;
 	position: relative;
-	background: #fff;
+	background: var(--frame);
 }
 
 #pinnedTabs .tab .close,
@@ -154,6 +154,6 @@
 	opacity: 0;
 	transition: opacity .05s ease-out;
 	z-index: 1000000;
-	background: #f1f1f2;
+	background: var(--surface);
 	transform-origin: top left;
 }
