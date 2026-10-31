@@ -92,6 +92,13 @@
 	bottom: 5px;
 }
 
+/* too many tabs even for the small tiles (upstream #139) */
+.group .content.scroll {
+	overflow-x: hidden;
+	overflow-y: auto;
+	scrollbar-width: thin;
+}
+
 .group .bottom_right {
 	width: 20px;
 	height: 20px;

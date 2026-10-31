@@ -429,75 +429,78 @@ async function insertTab( tab ) {
 	}
 }
 
+// tile layout for `amount` tiles in a width x height box
+function computeFit( width, height, amount ) {
+	var ratio = background.config.tab.ratio;
+	var small = false;
+	var scroll = false;
+
+	var fit = getBestFit( {
+		width: width,
+		height: height,
+		minWidth: background.config.tab.minWidth,
+		maxWidth: background.config.tab.maxWidth,
+		ratio: ratio,
+		amount: amount,
+	} );
+
+	if ( fit.x == -1 || fit.y == -1 ) {
+		ratio = 1;
+		small = true;
+
+		fit = getBestFit( {
+			width: width,
+			height: height,
+			minWidth: 50,
+			maxWidth: 99,
+			ratio: ratio,
+			amount: amount,
+		} );
+	}
+
+	// still doesn't fit: smallest tiles and let the group scroll (upstream #139)
+	if ( fit.x == -1 || fit.y == -1 ) {
+		scroll = true;
+		fit = { x: Math.max( 1, Math.floor( width / 50 ) ) };
+	}
+
+	var w = width / fit.x;
+
+	return { x: fit.x, w: w, h: w * ratio, small: small, scroll: scroll };
+}
+
 function updateGroupFit( group ) {
 	requestAnimationFrame( () => {
 		var node = groupNodes[ group.id ];
+		if ( !node ) {
+			return;
+		}
+
 		var childNodes = node.content.childNodes;
 
 		node.tabCount.innerHTML = '';
 		node.tabCount.appendChild( document.createTextNode( childNodes.length - 1 ) );
 
-		// fit
 		var rect = node.content.getBoundingClientRect();
+		var fit = computeFit( rect.width, rect.height, childNodes.length );
 
-		var ratio = background.config.tab.ratio;
-		var small = false;
-
-		var fit = getBestFit( {
-			width: rect.width,
-			height: rect.height,
-
-			minWidth: background.config.tab.minWidth,
-			maxWidth: background.config.tab.maxWidth,
-
-			ratio: ratio,
-
-			amount: childNodes.length,
-		} );
-
-		if ( fit.x == -1 || fit.y == -1 ) {
-			ratio = 1;
-			small = true;
-
-			fit = getBestFit( {
-				width: rect.width,
-				height: rect.height,
-
-				minWidth: 50,
-				maxWidth: 99,
-
-				ratio: ratio,
-
-				amount: childNodes.length,
-			} );
+		if ( fit.scroll ) {
+			node.content.classList.add( 'scroll' );
+		} else {
+			node.content.classList.remove( 'scroll' );
 		}
-
-		// this should be the deck view
-		if ( fit.x == -1 || fit.y == -1 ) {
-			fit = {
-				x: 11,
-				y: 10,
-			}
-		}
-
-		var index = 0;
-
-		var w = rect.width / fit.x;
-		var h = w * ratio;
 
 		for ( var i = 0; i < childNodes.length; i++ ) {
-			if ( small ) {
+			if ( fit.small ) {
 				childNodes[ i ].classList.add( 'small' );
 			} else {
 				childNodes[ i ].classList.remove( 'small' );
 			}
 
-			childNodes[ i ].style.width = w + 'px';
-			childNodes[ i ].style.height = h + 'px';
-			childNodes[ i ].style.left = ( w * ( index % fit.x ) ) + 'px';
-			childNodes[ i ].style.top = ( h * Math.floor( index / fit.x ) ) + 'px';
-
-			index++;
+			childNodes[ i ].style.width = fit.w + 'px';
+			childNodes[ i ].style.height = fit.h + 'px';
+			childNodes[ i ].style.left = ( fit.w * ( i % fit.x ) ) + 'px';
+			childNodes[ i ].style.top = ( fit.h * Math.floor( i / fit.x ) ) + 'px';
 		}
 	} );
 }
