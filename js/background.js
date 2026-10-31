@@ -25,7 +25,7 @@ function semverCompare (a, b) {
 };
 
 async function getViewId() {
-	const tabs = await browser.tabs.query( { url: browser.extension.getURL( "view.html" ), currentWindow: true } );
+	const tabs = await browser.tabs.query( { url: browser.runtime.getURL( "view.html" ), currentWindow: true } );
 
 	return tabs.length ? tabs[ 0 ].id : undefined;
 }

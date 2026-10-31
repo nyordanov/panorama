@@ -20,7 +20,7 @@
 	"browser_specific_settings": {
 		"gecko": {
 			"id": "panorama@nyordanov.com",
-			"strict_min_version": "59.0a1",
+			"strict_min_version": "82.0",
 			"data_collection_permissions": {
 				"required": [ "none" ]
 			}
