@@ -130,7 +130,7 @@ async function salvageGrouplessTabs() {
 
 	for ( const w of _windows ) {
 		windows[ w.id ] = { groups: null };
-		windows[ w.id ].groups = await browser.sessions.getWindowValue( w.id, 'groups' );
+		windows[ w.id ].groups = await browser.sessions.getWindowValue( w.id, 'groups' ) || [];
 	}
 
 	// check all tabs
@@ -138,6 +138,11 @@ async function salvageGrouplessTabs() {
 
 	for ( const tab of await tabs ) {
 		let groupId = await browser.sessions.getTabValue( tab.id, 'groupId' );
+
+		// pinned tabs live outside groups, -1 is the panorama tab
+		if ( tab.pinned || groupId == -1 ) {
+			continue;
+		}
 
 		if ( groupId === undefined ) {
 			let activeGroup = await browser.sessions.getWindowValue( tab.windowId, 'activeGroup' );
@@ -158,6 +163,14 @@ async function salvageGrouplessTabs() {
 	}
 }
 
+// an unpinned tab joins the active group instead of reappearing in whatever group it came from
+async function tabUpdated( tabId, changeInfo, tab ) {
+	if ( changeInfo.pinned === false ) {
+		await browser.sessions.setTabValue( tabId, 'groupId', await waitActiveGroup( tab.windowId ) );
+		await tabs.toggleAll( tab.windowId );
+	}
+}
+
 async function init() {
 	await setupWindows();
 	await groups.init();
@@ -166,6 +179,7 @@ async function init() {
 	browser.browserAction.onClicked.addListener( openView );
 	browser.windows.onCreated.addListener( createGroupInWindow );
 	browser.tabs.onCreated.addListener( tabCreated );
+	browser.tabs.onUpdated.addListener( tabUpdated );
 
 	browser.windows.onFocusChanged.addListener( async windowId =>  {
 		await groups.init();

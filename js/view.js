@@ -106,6 +106,10 @@ async function tabUpdated( tabId, changeInfo, tab ) {
 	}
 
 	if ( 'pinned' in changeInfo ) {
+		// unpinned tabs join the active group (the background does the same, whichever runs first)
+		if ( !changeInfo.pinned && tab.windowId == view.windowId ) {
+			await browser.sessions.setTabValue( tab.id, 'groupId', await groups.getActive() );
+		}
 		fillGroupNodes();
 		updateTabNode( tab );
 	}
