@@ -123,34 +123,50 @@ function makeGroupNode( group ) {
 		willChange: 'transform',
 	} );
 
-	close.addEventListener( 'click', function( event ) {
+	close.addEventListener( 'click', async function( event ) {
 		event.stopPropagation();
 
-		var childNodes = content.childNodes;
-		var tabCount = childNodes.length - 1;
-
-		if ( tabCount > 0 ) {
-			if ( window.confirm( 'Closing this Group will close the ' + tabCount + ' tab' + ( tabCount == 1 ? '' : 's' ) + ' within it' ) ) {
-				groups.remove( group.id );
-				removeGroupNode( group.id );
-
-				tabs.forEach( async function( tab ) {
-					var groupId = await tabs.getGroupId( tab.id );
-					if ( groupId == group.id ) {
-						browser.tabs.remove( tab.id );
-					}
-				} );
-				var first = true;
-				groups.forEach( function( g ) {
-					if ( first ) {
-						groups.setActive( g.id );
-					}
-				} );
+		let other;
+		groups.forEach( g => {
+			if ( other === undefined && g.id != group.id ) {
+				other = g.id;
 			}
-		} else {
-			groups.remove( group.id );
-			removeGroupNode( group.id );
+		} );
+
+		// ponytail: the last group can't be closed, new tabs would have no group to join
+		if ( other === undefined ) {
+			return;
 		}
+
+		var tabCount = content.childNodes.length - 1;
+
+		if ( tabCount > 0 && !window.confirm( 'Closing this Group will close the ' + tabCount + ' tab' + ( tabCount == 1 ? '' : 's' ) + ' within it' ) ) {
+			return;
+		}
+
+		const tabIds = [];
+		await tabs.forEach( async function( tab ) {
+			if ( await tabs.getGroupId( tab.id ) == group.id ) {
+				tabIds.push( tab.id );
+			}
+		} );
+
+		if ( tabIds.length ) {
+			await browser.tabs.remove( tabIds );
+
+			// a beforeunload prompt can keep tabs open; keep their group then (upstream #27)
+			const open = await browser.tabs.query( { currentWindow: true } );
+			if ( open.some( tab => tabIds.includes( tab.id ) ) ) {
+				return;
+			}
+		}
+
+		if ( await groups.getActive() == group.id ) {
+			await groups.setActive( other );
+		}
+
+		await groups.remove( group.id );
+		removeGroupNode( group.id );
 	}, false );
 
 	content.addEventListener( 'click', function( event ) {
