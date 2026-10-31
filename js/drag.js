@@ -71,8 +71,17 @@ function tabDragOver( e ) {
 	return false;
 }
 
+function clearDragCSS() {
+	if ( dragTab ) {
+		dragTab.classList.remove( 'drag' );
+	}
+	view.dragIndicator.classList.remove( 'show' );
+	dragCount = 0;
+}
+
 async function tabDrop( e ) {
 	e.stopPropagation();
+	clearDragCSS();
 
 	if ( dragTab !== dragOverTab ) {
 		if ( dragDropBefore ) {
@@ -124,6 +133,7 @@ function groupDragOver( e ) {
 }
 
 async function putTabInGroup( groupId ) {
+	clearDragCSS();
 	groupNodes[ groupId ].newtab.insertAdjacentElement( 'beforebegin', dragTab );
 
 	groups.forEach( function( group ) {
