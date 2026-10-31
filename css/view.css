@@ -61,7 +61,7 @@ body {
 	position: relative;
 }
 
-#newGroup .button {
+#toolbar .button {
 	width: 28px;
 	height: 28px;
 	line-height: 28px;
@@ -84,6 +84,14 @@ body {
 	padding: 5px 10px;
 }
 
+
+#autoLayout {
+	margin-bottom: 5px;
+}
+
+#toolbar .button:hover {
+	background-color: var(--border);
+}
 
 #newGroup:hover .info {
 	transform: translateY( -50% );

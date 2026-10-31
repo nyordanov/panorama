@@ -99,6 +99,8 @@ async function initGroupNodes() {
 			updateGroupFit( group );
 		} );
 	}, 100 ) );
+
+	document.getElementById( 'autoLayout' ).addEventListener( 'click', autoLayout, false );
 }
 
 function makeGroupNode( group ) {
@@ -503,4 +505,96 @@ function updateGroupFit( group ) {
 			childNodes[ i ].style.top = ( fit.h * Math.floor( i / fit.x ) ) + 'px';
 		}
 	} );
+}
+
+// group chrome around the tiles: margin 5+5, border 1+1, content inset 5+5 / 28+5
+const GROUP_PAD_X = 22, GROUP_PAD_Y = 45, GROUP_MIN_W = 150, GROUP_MIN_H = 100;
+
+// Splits width x height into one cell per group (tile counts in `counts`, in display order).
+// Tries every row count and a few ways of sharing space by tab count, and keeps the
+// layout whose smallest tab thumbnail is biggest (average thumbnail breaks ties).
+function planLayout( counts, width, height ) {
+	const n = counts.length;
+	const weightings = [ c => 1, c => Math.sqrt( c ), c => c ];
+
+	var best, bestScore = -Infinity;
+
+	for ( let r = 1; r <= n; r++ ) {
+		// r contiguous rows whose lengths differ by at most one
+		const rows = [];
+		for ( let i = 0, start = 0; i < r; i++ ) {
+			const len = Math.floor( n / r ) + ( i < n % r ? 1 : 0 );
+			rows.push( counts.slice( start, start + len ).map( ( c, j ) => ( { i: start + j, c: c } ) ) );
+			start += len;
+		}
+
+		for ( const weight of weightings ) {
+			const rowWeight = row => row.reduce( ( sum, cell ) => sum + weight( cell.c ), 0 );
+			const total = rows.reduce( ( sum, row ) => sum + rowWeight( row ), 0 );
+
+			const cells = [];
+			let min = Infinity, sum = 0, y = 0;
+
+			for ( const row of rows ) {
+				const rw = rowWeight( row );
+				const rh = height * rw / total;
+				let x = 0;
+
+				for ( const cell of row ) {
+					const cw = width * weight( cell.c ) / rw;
+					cells[ cell.i ] = { x: x, y: y, w: cw, h: rh };
+
+					let score = -1;
+					if ( cw >= GROUP_MIN_W && rh >= GROUP_MIN_H ) {
+						const fit = computeFit( cw - GROUP_PAD_X, rh - GROUP_PAD_Y, cell.c );
+						score = fit.scroll ? 0 : fit.w;
+					}
+					min = Math.min( min, score );
+					sum += score;
+					x += cw;
+				}
+				y += rh;
+			}
+
+			const score = min + sum / n / 1000;
+			if ( score > bestScore ) {
+				bestScore = score;
+				best = cells;
+			}
+		}
+	}
+
+	return best;
+}
+
+function autoLayout() {
+	const list = [];
+	groups.forEach( group => list.push( group ) );
+
+	// keep the current reading order: rows (by quarter of the screen), then left to right
+	list.sort( ( a, b ) => ( Math.round( a.rect.y * 4 ) - Math.round( b.rect.y * 4 ) ) || ( a.rect.x - b.rect.x ) );
+
+	const cells = planLayout(
+		list.map( group => groupNodes[ group.id ].content.childNodes.length ),
+		view.groupsNode.clientWidth,
+		view.groupsNode.clientHeight
+	);
+
+	list.forEach( ( group, i ) => {
+		const cell = cells[ i ];
+
+		// the cell includes the group's 5px margin and 1px border on each side
+		Object.assign( group.rect, {
+			x: view.pxToWidth( cell.x ),
+			y: view.pxToHeight( cell.y ),
+			w: view.pxToWidth( cell.w - 12 ),
+			h: view.pxToHeight( cell.h - 12 ),
+		} );
+
+		moveGroup( group );
+		resizeGroup( group );
+		updateGroupFit( group );
+	} );
+
+	groups.save();
 }
