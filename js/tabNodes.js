@@ -99,7 +99,10 @@ async function setActiveTabNode() {
 		}
 	} );
 
-	tabNodes[ lastActive ].tab.classList.add( 'selected' );
+	// the tab may already be gone, e.g. the active tab was just closed
+	if ( tabNodes[ lastActive ] ) {
+		tabNodes[ lastActive ].tab.classList.add( 'selected' );
+	}
 }
 
 function deleteTabNode( tabId ) {
