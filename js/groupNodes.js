@@ -30,7 +30,7 @@ async function initGroupNodes() {
 
 	let createGroupStart = {};
 	view.groupsNode.addEventListener( 'mousedown', event => {
-		if ( event.target.id === 'groups' ) {
+		if ( event.target.id === 'groups' && event.button === 0 ) {
 			event.preventDefault();
 			event.stopPropagation();
 
@@ -198,6 +198,10 @@ function makeGroupNode( group ) {
 	// move
 	let moveStart = {}, initialPosition = {};
 	header.addEventListener( 'mousedown', function( event ) {
+		if ( event.button !== 0 ) {
+			return;
+		}
+
 		moveStart = {
 			x: event.clientX,
 			y: event.clientY,
@@ -246,6 +250,10 @@ function makeGroupNode( group ) {
 	// resize
 	let resizeStart = {}, windowWidth, windowHeight;
 	bottom_right.addEventListener( 'mousedown', function( event ) {
+		if ( event.button !== 0 ) {
+			return;
+		}
+
 		event.preventDefault();
 		event.stopPropagation();
 
