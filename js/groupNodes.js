@@ -316,6 +316,9 @@ function makeGroupNode( group ) {
 		view.resizeDummy.style.opacity = 0;
 		node.style.opacity = 1;
 	};
+
+	// sizes are frozen while the cursor is inside the group (see tabRemoved), re-fit on the way out
+	node.addEventListener( 'mouseleave', () => updateGroupFit( group ), false );
 }
 
 function removeGroupNode( groupId ) {
@@ -471,7 +474,9 @@ function computeFit( width, height, amount ) {
 	return { x: fit.x, w: w, h: w * ratio, small: small, scroll: scroll };
 }
 
-function updateGroupFit( group ) {
+// keepSize reuses the previous tile size so the remaining tiles slide into the gap
+// without resizing, e.g. to close several neighbouring tabs without moving the mouse
+function updateGroupFit( group, keepSize = false ) {
 	requestAnimationFrame( () => {
 		var node = groupNodes[ group.id ];
 		if ( !node ) {
@@ -483,8 +488,12 @@ function updateGroupFit( group ) {
 		node.tabCount.innerHTML = '';
 		node.tabCount.appendChild( document.createTextNode( childNodes.length - 1 ) );
 
-		var rect = node.content.getBoundingClientRect();
-		var fit = computeFit( rect.width, rect.height, childNodes.length );
+		if ( !keepSize || !node.fit ) {
+			var rect = node.content.getBoundingClientRect();
+			node.fit = computeFit( rect.width, rect.height, childNodes.length );
+		}
+
+		var fit = node.fit;
 
 		if ( fit.scroll ) {
 			node.content.classList.add( 'scroll' );

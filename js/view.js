@@ -94,7 +94,8 @@ function tabRemoved( tabId, removeInfo ) {
 	if ( view.windowId == removeInfo.windowId && view.tabId != tabId ) {
 		deleteTabNode( tabId );
 		groups.forEach( function( group ) {
-			updateGroupFit( group );
+			// don't resize tiles under the cursor, the next tab slides in where the closed one was
+			updateGroupFit( group, groupNodes[ group.id ].group.matches( ':hover' ) );
 		} );
 	}
 }
