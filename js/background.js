@@ -89,6 +89,11 @@ async function newGroupUid( windowId ) {
 
 async function createGroupInWindow( window ) {
 
+	// a window reopened from history already has its groups (upstream #25)
+	if ( await browser.sessions.getWindowValue( window.id, 'groups' ) ) {
+		return;
+	}
+
 	var groupId = await newGroupUid( window.id );
 
 	var groups = [ {
