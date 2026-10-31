@@ -163,6 +163,16 @@ async function salvageGrouplessTabs() {
 	}
 }
 
+// tabs moved from another window join this window's active group; group ids are per window,
+// so a preserved id (Firefox 148+) would point at an unrelated group here
+async function tabAttached( tabId, attachInfo ) {
+	if ( await browser.sessions.getTabValue( tabId, 'groupId' ) == -1 ) {
+		return; // the panorama tab itself
+	}
+	await browser.sessions.setTabValue( tabId, 'groupId', await waitActiveGroup( attachInfo.newWindowId ) );
+	await tabs.toggleAll( attachInfo.newWindowId );
+}
+
 // an unpinned tab joins the active group instead of reappearing in whatever group it came from
 async function tabUpdated( tabId, changeInfo, tab ) {
 	if ( changeInfo.pinned === false ) {
@@ -179,6 +189,7 @@ async function init() {
 	browser.browserAction.onClicked.addListener( openView );
 	browser.windows.onCreated.addListener( createGroupInWindow );
 	browser.tabs.onCreated.addListener( tabCreated );
+	browser.tabs.onAttached.addListener( tabAttached );
 	browser.tabs.onUpdated.addListener( tabUpdated );
 
 	browser.windows.onFocusChanged.addListener( async windowId =>  {
