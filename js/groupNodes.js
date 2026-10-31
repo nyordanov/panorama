@@ -93,6 +93,12 @@ async function initGroupNodes() {
 
 		view.resizeDummy.style.opacity = 0;
 	};
+
+	window.addEventListener( 'resize', debounce( event => {
+		groups.forEach( function( group ) {
+			updateGroupFit( group );
+		} );
+	}, 100 ) );
 }
 
 function makeGroupNode( group ) {
@@ -308,12 +314,6 @@ function makeGroupNode( group ) {
 		view.resizeDummy.style.opacity = 0;
 		node.style.opacity = 1;
 	};
-
-	window.addEventListener( 'resize', debounce( event => {
-		groups.forEach( function( group ) {
-			updateGroupFit( group );
-		} );
-	}, 100 ) );
 }
 
 function removeGroupNode( groupId ) {
