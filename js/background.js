@@ -41,20 +41,28 @@ async function openView() {
 	}
 }
 
+// a new window's group is set up asynchronously in createGroupInWindow
+async function waitActiveGroup( windowId ) {
+	let activeGroup;
+	while ( activeGroup === undefined ) {
+		activeGroup = await browser.sessions.getWindowValue( windowId, 'activeGroup' );
+	}
+	return activeGroup;
+}
+
+async function groupExists( windowId, groupId ) {
+	const groups = await browser.sessions.getWindowValue( windowId, 'groups' ) || [];
+	return groups.some( group => group.id == groupId );
+}
+
 async function tabCreated( tab ) {
 	if ( !openingView ) {
 
 		var tabGroupId = await browser.sessions.getTabValue( tab.id, 'groupId' );
 
-		if ( tabGroupId === undefined ) {
-
-			var activeGroup = undefined;
-
-			while ( activeGroup === undefined ) {
-				activeGroup = ( await browser.sessions.getWindowValue( tab.windowId, 'activeGroup' ) );
-			}
-
-			browser.sessions.setTabValue( tab.id, 'groupId', activeGroup );
+		// undefined: brand new tab; missing group: tab restored after its group was closed (upstream #86)
+		if ( tabGroupId === undefined || ( tabGroupId != -1 && !await groupExists( tab.windowId, tabGroupId ) ) ) {
+			browser.sessions.setTabValue( tab.id, 'groupId', await waitActiveGroup( tab.windowId ) );
 		}
 	} else {
 		openingView = false;
