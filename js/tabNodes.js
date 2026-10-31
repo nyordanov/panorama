@@ -36,6 +36,21 @@ function makeTabNode( tab ) {
 		await groups.setActive( groupId );
 	}, false );
 
+	// middle click closes, like in the tab strip; mousedown is cancelled to avoid autoscroll
+	node.addEventListener( 'mousedown', function( event ) {
+		if ( event.button === 1 ) {
+			event.preventDefault();
+		}
+	}, false );
+
+	node.addEventListener( 'auxclick', function( event ) {
+		if ( event.button === 1 ) {
+			event.preventDefault();
+			event.stopPropagation();
+			browser.tabs.remove( tab.id );
+		}
+	}, false );
+
 	close.addEventListener( 'click', function( event ) {
 		event.stopPropagation();
 		browser.tabs.remove( tab.id );
