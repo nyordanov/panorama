@@ -190,7 +190,7 @@ function makeGroupNode( group ) {
 	resizeGroup( group );
 
 	// renaming groups
-	input.addEventListener( 'keypress', function( event ) {
+	input.addEventListener( 'input', function( event ) {
 		groups.rename( group.id, this.value );
 	}, false );
 	// ----
