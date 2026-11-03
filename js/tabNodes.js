@@ -33,7 +33,11 @@ function makeTabNode( tab ) {
 
 		var groupId = await browser.sessions.getTabValue( tab.id, 'groupId' );
 		await browser.tabs.update( tab.id, { active: true } );
-		await groups.setActive( groupId );
+
+		// pinned tabs are visible in every group, stay in the current one
+		if ( !node.classList.contains( 'pinned' ) ) {
+			await groups.setActive( groupId );
+		}
 	}, false );
 
 	// middle click closes, like in the tab strip; mousedown is cancelled to avoid autoscroll

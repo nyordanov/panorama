@@ -83,7 +83,7 @@ async function tabDrop( e ) {
 	e.stopPropagation();
 	clearDragCSS();
 
-	if ( dragTab !== dragOverTab ) {
+	if ( dragTab !== dragOverTab && !dragOverTab.classList.contains( 'pinned' ) ) {
 		if ( dragDropBefore ) {
 			dragOverTab.insertAdjacentElement( 'beforebegin', dragTab );
 		} else {

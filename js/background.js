@@ -58,6 +58,12 @@ async function groupExists( windowId, groupId ) {
 async function tabCreated( tab ) {
 	if ( !openingView ) {
 
+		// pinned tabs belong to every group, so they store none
+		if ( tab.pinned ) {
+			browser.sessions.removeTabValue( tab.id, 'groupId' );
+			return;
+		}
+
 		var tabGroupId = await browser.sessions.getTabValue( tab.id, 'groupId' );
 
 		// undefined: brand new tab; missing group: tab restored after its group was closed (upstream #86)
@@ -119,7 +125,9 @@ async function createGroupInWindow( window ) {
 	const tabs = browser.tabs.query( { windowId: window.id } );
 
 	for ( const tab of await tabs ) {
-		browser.sessions.setTabValue( tab.id, 'groupId', groupId );
+		if ( !tab.pinned ) {
+			browser.sessions.setTabValue( tab.id, 'groupId', groupId );
+		}
 	}
 }
 
@@ -139,8 +147,14 @@ async function salvageGrouplessTabs() {
 	for ( const tab of await tabs ) {
 		let groupId = await browser.sessions.getTabValue( tab.id, 'groupId' );
 
-		// pinned tabs live outside groups, -1 is the panorama tab
-		if ( tab.pinned || groupId == -1 ) {
+		// also clears the group that tabs pinned by older versions still store
+		if ( tab.pinned ) {
+			browser.sessions.removeTabValue( tab.id, 'groupId' );
+			continue;
+		}
+
+		// -1 is the panorama tab
+		if ( groupId == -1 ) {
 			continue;
 		}
 
@@ -166,8 +180,8 @@ async function salvageGrouplessTabs() {
 // tabs moved from another window join this window's active group; group ids are per window,
 // so a preserved id (Firefox 148+) would point at an unrelated group here
 async function tabAttached( tabId, attachInfo ) {
-	if ( await browser.sessions.getTabValue( tabId, 'groupId' ) == -1 ) {
-		return; // the panorama tab itself
+	if ( ( await browser.tabs.get( tabId ) ).pinned || await browser.sessions.getTabValue( tabId, 'groupId' ) == -1 ) {
+		return; // pinned tabs have no group, -1 is the panorama tab itself
 	}
 	await browser.sessions.setTabValue( tabId, 'groupId', await waitActiveGroup( attachInfo.newWindowId ) );
 	await tabs.toggleAll( attachInfo.newWindowId );
@@ -175,7 +189,9 @@ async function tabAttached( tabId, attachInfo ) {
 
 // an unpinned tab joins the active group instead of reappearing in whatever group it came from
 async function tabUpdated( tabId, changeInfo, tab ) {
-	if ( changeInfo.pinned === false ) {
+	if ( changeInfo.pinned === true ) {
+		await browser.sessions.removeTabValue( tabId, 'groupId' );
+	} else if ( changeInfo.pinned === false ) {
 		await browser.sessions.setTabValue( tabId, 'groupId', await waitActiveGroup( tab.windowId ) );
 		await tabs.toggleAll( tab.windowId );
 	}
@@ -184,6 +200,10 @@ async function tabUpdated( tabId, changeInfo, tab ) {
 // a hidden tab can still be activated (urlbar "switch to tab", other add-ons, ...);
 // follow it into its group instead of leaving it visible among another group's tabs
 async function tabActivated( activeInfo ) {
+	if ( ( await browser.tabs.get( activeInfo.tabId ) ).pinned ) {
+		return;
+	}
+
 	const groupId = await browser.sessions.getTabValue( activeInfo.tabId, 'groupId' );
 
 	if ( groupId === undefined || groupId == -1 || !await groupExists( activeInfo.windowId, groupId ) ) {

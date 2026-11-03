@@ -405,6 +405,10 @@ async function fillGroupNodes() {
 
 async function insertTab( tab ) {
 
+	if ( tab.pinned ) {
+		return;
+	}
+
 	var groupId = await tabs.getGroupId( tab.id );
 
 	if ( groupId != -1 ) {

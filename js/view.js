@@ -79,6 +79,11 @@ async function tabCreated( tab, groupId = undefined ) {
 		updateTabNode( tab );
 		updateFavicon( tab );
 
+		if ( tab.pinned ) {
+			groupNodes.pinned.content.appendChild( tabNodes[ tab.id ].tab );
+			return;
+		}
+
 		while ( groupId === undefined ) {
 			groupId = await tabs.getGroupId( tab.id );
 		}
@@ -131,7 +136,9 @@ async function tabAttached( tabId, attachInfo ) {
 	if ( view.windowId == attachInfo.newWindowId ) {
 		let tab = await browser.tabs.get( tabId );
 
-		tabs.setGroupId( tabId, await browser.sessions.getWindowValue( view.windowId, 'activeGroup' ) );
+		if ( !tab.pinned ) {
+			tabs.setGroupId( tabId, await browser.sessions.getWindowValue( view.windowId, 'activeGroup' ) );
+		}
 		tabCreated( tab );
 	}
 }
