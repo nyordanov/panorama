@@ -135,8 +135,14 @@ async function updateThumbnail( tabId ) {
 	var node = tabNodes[ tabId ];
 
 	if ( node ) {
-		const thumbnail = await browser.tabs.captureTab( tabId, { format: 'jpeg', quality: 25 } );
-		node.inner.style.backgroundImage = 'url(' + thumbnail + ')';
+		const show = thumbnail => {
+			if ( thumbnail ) {
+				node.inner.style.backgroundImage = 'url(' + thumbnail + ')';
+			}
+		};
+
+		show( await browser.sessions.getTabValue( tabId, 'thumbnail' ) );
+		show( await tabs.captureThumbnail( tabId ) );
 	}
 }
 

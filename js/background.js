@@ -189,6 +189,10 @@ async function tabAttached( tabId, attachInfo ) {
 
 // an unpinned tab joins the active group instead of reappearing in whatever group it came from
 async function tabUpdated( tabId, changeInfo, tab ) {
+	if ( changeInfo.status === 'complete' ) {
+		tabs.captureThumbnail( tabId );
+	}
+
 	if ( changeInfo.pinned === true ) {
 		await browser.sessions.removeTabValue( tabId, 'groupId' );
 	} else if ( changeInfo.pinned === false ) {
@@ -200,6 +204,11 @@ async function tabUpdated( tabId, changeInfo, tab ) {
 // a hidden tab can still be activated (urlbar "switch to tab", other add-ons, ...);
 // follow it into its group instead of leaving it visible among another group's tabs
 async function tabActivated( activeInfo ) {
+	// the tab as the user left it, which is what it looks like if it gets discarded later
+	if ( activeInfo.previousTabId !== undefined ) {
+		tabs.captureThumbnail( activeInfo.previousTabId );
+	}
+
 	if ( ( await browser.tabs.get( activeInfo.tabId ) ).pinned ) {
 		return;
 	}
